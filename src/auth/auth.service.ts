@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,6 +13,9 @@ import { LoginDto } from './dto/login.dto';
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -19,40 +23,13 @@ export class AuthService {
     private userService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async signUp(createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
 
     return { message: 'Check your email to activate...' };
-  }
-
-  async activate(token: string) {
-    try {
-      const { userId } = await this.jwtService.verifyActivationToken(token);
-
-      const user = await this.userService.getOne({ id: userId });
-      if (!user) {
-        throw new NotFoundException('User not found.');
-      }
-
-      if (user.is_active) {
-        return { success: true, message: 'Account is already activated' };
-      }
-
-      await this.userService.activateUser(userId);
-
-      return { success: true, message: 'Account activated successfully' };
-    } catch (error) {
-      if (
-        error.name === 'JsonWebTokenError' ||
-        error.name === 'TokenExpiredError'
-      ) {
-        throw new BadRequestException('Invalid or expired activation link');
-      }
-
-      errorHandler(error, 'AuthService.activate');
-    }
   }
 
   async logIn(logInDto: LoginDto, res: Response) {
@@ -156,6 +133,119 @@ export class AuthService {
         throw new UnauthorizedException('Invalid or expired refresh token');
       }
       errorHandler(error, 'AuthService.refresh');
+    }
+  }
+
+  async updatePassword(userId: number, updatePassword: UpdatePasswordDto) {
+    try {
+      if (updatePassword.new_password !== updatePassword.confirm_new_password) {
+        throw new BadRequestException('Passwords do not match');
+      }
+
+      const user = await this.userService.getOneForAuthById(userId);
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        updatePassword.current_password,
+        user.hashed_password,
+      );
+
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      await this.userService.updatePassword(
+        user.id,
+        updatePassword.new_password,
+      );
+
+      return { success: true, message: 'Password updated successfully' };
+    } catch (error) {
+      errorHandler(error, 'AuthService.updatePassword');
+    }
+  }
+
+  async updateEmail(userId: number, { new_email }: UpdateEmailDto) {
+    try {
+      const { emailAvailable } = await this.userService.isAvailable(
+        undefined,
+        new_email,
+      );
+
+      if (!emailAvailable) {
+        throw new ConflictException('Email already exists');
+      }
+
+      const user = await this.userService.getOneForAuthById(userId);
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const updateToken = this.jwtService.generateUpdateToken({
+        userId,
+        new_email,
+      });
+
+      this.emailService.sendEmailUpdateVerification(
+        new_email,
+        user.username,
+        updateToken,
+      );
+
+      return { message: 'Please check your new email to update' };
+    } catch (error) {
+      errorHandler(error, 'AuthService.updateEmail');
+    }
+  }
+
+  async activate(token: string) {
+    try {
+      const { userId } = await this.jwtService.verifyActivationToken(token);
+
+      const user = await this.userService.getOne({ id: userId });
+      if (!user) {
+        return 'User not found';
+      }
+
+      if (user.is_active) {
+        return 'Account is already activated';
+      }
+
+      await this.userService.activateUser(userId);
+
+      return 'Account activated successfully';
+    } catch (error) {
+      if (
+        error.name === 'JsonWebTokenError' ||
+        error.name === 'TokenExpiredError'
+      ) {
+        throw new BadRequestException('Invalid or expired activation link');
+      }
+
+      errorHandler(error, 'AuthService.activate');
+    }
+  }
+
+  async verifyNewEmail(token: string) {
+    try {
+      const { userId, new_email } =
+        await this.jwtService.verifyUpdateToken(token);
+
+      await this.userService.updateEmail(userId, new_email);
+
+      return 'Email updated successfully';
+    } catch (error) {
+      if (
+        error.name === 'JsonWebTokenError' ||
+        error.name === 'TokenExpiredError'
+      ) {
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+      errorHandler(error, 'AuthService.verifyNewEmail');
     }
   }
 }

@@ -74,7 +74,7 @@ export class UsersService {
         description: createUserDto.description || null,
         email: createUserDto.email.toLowerCase(),
         hashed_password: hashedPassword,
-        is_active: false, 
+        is_active: false,
       });
 
       savedUser = await this.userRepo.save(user);
@@ -271,6 +271,24 @@ export class UsersService {
     }
   }
 
+  async updatePassword(userId: number, password: string) {
+    try {
+      const hashed_password = await bcrypt.hash(password, 10);
+
+      await this.userRepo.update({ id: userId }, { hashed_password });
+    } catch (error) {
+      errorHandler(error, 'UsersService.updatePassword');
+    }
+  }
+
+  async updateEmail(userId: number, email: string) {
+    try {
+      await this.userRepo.update({ id: userId }, { email });
+    } catch (error) {
+      errorHandler(error, 'UsersService.updateEmail');
+    }
+  }
+
   async remove(id: number) {
     try {
       const deleteRes = await this.userRepo.delete({ id });
@@ -278,8 +296,6 @@ export class UsersService {
       if (deleteRes.affected === 0) {
         throw new NotFoundException('User not found');
       }
-
-      
 
       return { message: 'Deleted successfully' };
     } catch (error) {

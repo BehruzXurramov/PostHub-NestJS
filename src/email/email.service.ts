@@ -18,6 +18,91 @@ export class EmailService {
     });
   }
 
+  async sendEmailUpdateVerification(
+    to: string,
+    username: string,
+    updateToken: string,
+  ): Promise<void> {
+    const updateUrl = `${this.configService.get<string>('THE_URL')}/auth/update-email?token=${updateToken}`;
+
+    const subject = 'Verify Your New Email Address';
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f9f9f9; }
+          .button { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            background-color: #4CAF50; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px;
+            margin: 20px 0;
+          }
+          .info-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 12px;
+            margin: 20px 0;
+          }
+          .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Email Update Request</h1>
+          </div>
+          <div class="content">
+            <h2>Hello, ${username}!</h2>
+            <p>You requested to update your email address.</p>
+            <div class="info-box">
+              <p style="margin: 0;"><strong>New Email:</strong> ${to}</p>
+            </div>
+            <p>Please verify your new email address by clicking the button below:</p>
+            <div style="text-align: center;">
+              <a href="${updateUrl}" class="button">Verify New Email</a>
+            </div>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #4CAF50;">${updateUrl}</p>
+            <p><strong>This link will expire in 1 hour.</strong></p>
+            <p><strong>If you didn't request this change, please ignore this email and your email address will remain unchanged.</strong></p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} PostHub. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+    const textContent = `
+Hello, ${username}!
+
+You requested to update your email address.
+
+New Email: ${to}
+
+Please verify your new email address by visiting this link:
+
+${updateUrl}
+
+This link will expire in 1 hour.
+
+If you didn't request this change, please ignore this email and your email address will remain unchanged.
+
+© ${new Date().getFullYear()} PostHub. All rights reserved.
+  `;
+
+    await this.sendEmail(to, subject, textContent, htmlContent);
+  }
+
   async sendActivationEmail(
     to: string,
     username: string,
@@ -108,7 +193,7 @@ If you didn't create an account, please ignore this email.
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      errorHandler(error, "EmailService.sendEmail")
+      errorHandler(error, 'EmailService.sendEmail');
     }
   }
 }
