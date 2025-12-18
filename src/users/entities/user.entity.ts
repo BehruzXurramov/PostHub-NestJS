@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Follow } from '../../follows/entities/follow.entity';
 
 @Entity('users')
 export class User {
@@ -37,4 +39,10 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[]
+
+  @OneToMany(() => Follow, (follow) => follow.followed)
+  followers: Follow[]
 }

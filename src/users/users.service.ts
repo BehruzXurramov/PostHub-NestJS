@@ -227,6 +227,10 @@ export class UsersService {
     }
   }
 
+  async existsBy(id: number) {
+    return await this.userRepo.existsBy({ id });
+  }
+
   async activateUser(userId: number) {
     await this.userRepo.update({ id: userId }, { is_active: true });
   }

@@ -21,7 +21,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('search')
-  @UseGuards(JwtAuthGuard)
   async findUsers(
     @Query('search') search: string,
     @Query('page') page?: string,
@@ -47,7 +46,6 @@ export class UsersController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   async getOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getOne({ id });
   }
