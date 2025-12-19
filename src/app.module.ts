@@ -8,6 +8,7 @@ import { EmailModule } from './email/email.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FollowsModule } from './follows/follows.module';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FollowsModule } from './follows/follows.module';
     EmailModule,
     TasksModule,
     FollowsModule,
+    PostModule,
   ],
   controllers: [],
   providers: [],

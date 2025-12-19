@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Follow } from '../../follows/entities/follow.entity';
+import { Post } from '../../post/entities/post.entity';
 
 @Entity('users')
 export class User {
@@ -41,8 +42,11 @@ export class User {
   updated_at: Date;
 
   @OneToMany(() => Follow, (follow) => follow.follower)
-  following: Follow[]
+  following: Follow[];
 
   @OneToMany(() => Follow, (follow) => follow.followed)
-  followers: Follow[]
+  followers: Follow[];
+
+  @OneToMany(() => Post, (post) => post.user, { cascade: true })
+  posts: Post[];
 }
