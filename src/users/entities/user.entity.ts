@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import { Follow } from '../../follows/entities/follow.entity';
 import { Post } from '../../post/entities/post.entity';
+import { Comment } from '../../comment/entities/comment.entity';
+import { Like } from '../../likes/entities/like.entity';
 
 @Entity('users')
 export class User {
@@ -49,4 +51,10 @@ export class User {
 
   @OneToMany(() => Post, (post) => post.user, { cascade: true })
   posts: Post[];
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 }

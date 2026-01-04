@@ -3,16 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Comment } from '../../comment/entities/comment.entity';
-import { Like } from '../../likes/entities/like.entity';
+import { Post } from '../../post/entities/post.entity';
 
-@Entity('post')
-export class Post {
+@Entity('comment')
+export class Comment {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
@@ -22,26 +20,21 @@ export class Post {
   @Column({ type: 'boolean', default: false })
   edited: boolean;
 
-  @Column({ type: 'integer', default: 0 })
-  viewed_times: number;
-
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
 
-  @ManyToOne(() => User, (user) => user.posts, {
+  @ManyToOne(() => User, (user) => user.comments, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   user: User;
 
-  @OneToMany(() => Comment, (comment) => comment.post, {
+  @ManyToOne(() => Post, (post) => post.comments, {
     onDelete: 'CASCADE',
+    nullable: false,
   })
-  comments: Comment[];
-
-  @OneToMany(() => Like, (like) => like.post)
-  likes: Like[];
+  post: Post;
 }

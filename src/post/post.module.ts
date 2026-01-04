@@ -9,5 +9,6 @@ import { JwtModule } from '../jwt/jwt.module';
   imports: [TypeOrmModule.forFeature([Post]), JwtModule],
   controllers: [PostController],
   providers: [PostService],
+  exports: [PostService],
 })
 export class PostModule {}

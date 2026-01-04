@@ -9,6 +9,8 @@ import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FollowsModule } from './follows/follows.module';
 import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
+import { LikesModule } from './likes/likes.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { PostModule } from './post/post.module';
     TasksModule,
     FollowsModule,
     PostModule,
+    CommentModule,
+    LikesModule,
   ],
   controllers: [],
   providers: [],
