@@ -37,10 +37,6 @@ export class LikesService {
         throw new NotFoundException('Post not found');
       }
 
-      if (post.user.id === currentUserId) {
-        throw new BadRequestException('You cannot like your own post');
-      }
-
       const like = this.likeRepo.create({
         user: { id: currentUserId } as User,
         post: { id: postId } as Post,
