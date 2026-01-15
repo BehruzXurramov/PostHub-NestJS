@@ -4,9 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,20 +34,27 @@ async function bootstrap() {
 - Temporary unavailability
 - Limited concurrent connections
 
-For production use or unlimited access, please deploy your own instance. See the GitHub repository for instructions.`,
+For production use or unlimited access, please deploy your own instance.
+
+---
+
+### 📌 Project Links
+
+**GitHub Repository**: [https://github.com/BehruzXurramov/PostHub-NestJS](https://github.com/BehruzXurramov/PostHub-NestJS)
+
+**Author**: Behruz Xurramov  
+**Email**: [bxurramov597@gmail.com](mailto:bxurramov597@gmail.com)
+
+**Community**: Join our Telegram group for questions, suggestions, and issue reports  
+[https://t.me/PostHubCommunity](https://t.me/PostHubCommunity)
+
+**License**: MIT License
+
+**Built a frontend with this API?** Share it with us in the [community](https://t.me/PostHubCommunity) 😊
+`,
     )
     .setVersion('1.0')
-    .setExternalDoc(
-      'GitHub Repository',
-      'https://github.com/BehruzXurramov/PostHub-NestJS',
-    )
-    .setContact(
-      'PostHub API',
-      'https://github.com/BehruzXurramov/PostHub-NestJS',
-      'bxurramov597@gmail.com',
-    )
-    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-    .addServer('https://api.posthub.bestapi.uz', 'Production Server')
+    .addServer('https://posthub.bestapi.uz', 'Production Server')
     .addServer('http://localhost:3000', 'Local Development')
     .addBearerAuth(
       {
@@ -76,18 +87,39 @@ For production use or unlimited access, please deploy your own instance. See the
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {
     customSiteTitle: 'PostHub API Documentation',
-    customfavIcon: 'https://nestjs.com/img/logo-small.svg',
+    customfavIcon: '/logo.ico',
     customCss: `
-      .swagger-ui .topbar { display: none }
-      .swagger-ui .info { margin: 20px 0; }
-      .swagger-ui .info .title { font-size: 36px; }
+  .swagger-ui .topbar {
+    display: none;
+  }
+
+  .swagger-ui .info {
+    margin: 30px 0;
+  }
+
+  .swagger-ui .info .title::before {
+    content: '';
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    margin-right: 12px;
+    background: url('/logo.png') no-repeat center;
+    background-size: contain;
+    vertical-align: middle;
+  }
+
+  .swagger-ui .info .title {
+    font-size: 36px;
+    display: flex;
+    align-items: center;
+  }
     `,
   });
 
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT', 3000);
   const NODE_ENV = configService.get<string>('NODE_ENV', 'development');
-  const THE_URL = configService.get<string>('THE_URL')
+  const THE_URL = configService.get<string>('THE_URL');
 
   await app.listen(PORT, () => {
     console.log(`
