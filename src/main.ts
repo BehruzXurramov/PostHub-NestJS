@@ -36,6 +36,8 @@ async function bootstrap() {
 
 For production use or unlimited access, please deploy your own instance.
 
+Swagger displays only one response per status code, so maybe some responses may not be displayed.
+
 ---
 
 ### 📌 Project Links
