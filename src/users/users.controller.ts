@@ -11,6 +11,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -88,13 +89,28 @@ export class UsersController {
       },
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid query parameters',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'page must be a valid integer',
+        error: 'Bad Request',
+      },
+    },
+  })
   async findUsers(
     @Query('search') search: string,
     @Query('page') page?: string,
   ) {
+    if (page && !/^\d+$/.test(page)) {
+      throw new BadRequestException('page must be a valid integer');
+    }
+    const parsedPage = page ? parseInt(page, 10) : 1;
     return this.usersService.findUsers({
       search,
-      page: page ? parseInt(page, 10) : 1,
+      page: parsedPage,
     });
   }
 

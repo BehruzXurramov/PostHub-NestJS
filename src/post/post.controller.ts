@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -142,13 +143,32 @@ export class PostController {
       },
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid query parameters',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'userId/page must be a valid integer',
+        error: 'Bad Request',
+      },
+    },
+  })
   async findAll(
-    @Query('userId', ParseIntPipe) userId?: number,
+    @Query('userId') userId?: string,
     @Query('page') page?: string,
   ) {
+    if (userId && !/^\d+$/.test(userId)) {
+      throw new BadRequestException('userId must be a valid integer');
+    }
+    if (page && !/^\d+$/.test(page)) {
+      throw new BadRequestException('page must be a valid integer');
+    }
+    const parsedUserId = userId ? parseInt(userId, 10) : undefined;
+    const parsedPage = page ? parseInt(page, 10) : 1;
     return this.postService.findAll({
-      userId,
-      page: page ? parseInt(page, 10) : 1,
+      userId: parsedUserId,
+      page: parsedPage,
     });
   }
 

@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -220,13 +221,39 @@ export class FollowsController {
       },
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing userId',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Validation failed (numeric string is expected)',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid query parameters',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'page must be a valid integer',
+        error: 'Bad Request',
+      },
+    },
+  })
   async getFollowers(
     @Param('id', ParseIntPipe) userId: number,
     @Query('page') page?: string,
   ) {
+    if (page && !/^\d+$/.test(page)) {
+      throw new BadRequestException('page must be a valid integer');
+    }
+    const parsedPage = page ? parseInt(page, 10) : 1;
     return this.followsService.getFollowers({
       userId,
-      page: page ? parseInt(page, 10) : 1,
+      page: parsedPage,
     });
   }
 
@@ -286,13 +313,39 @@ export class FollowsController {
       },
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing userId',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Validation failed (numeric string is expected)',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid query parameters',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'page must be a valid integer',
+        error: 'Bad Request',
+      },
+    },
+  })
   async getFollowing(
     @Param('id', ParseIntPipe) userId: number,
     @Query('page') page?: string,
   ) {
+    if (page && !/^\d+$/.test(page)) {
+      throw new BadRequestException('page must be a valid integer');
+    }
+    const parsedPage = page ? parseInt(page, 10) : 1;
     return this.followsService.getFollowing({
       userId,
-      page: page ? parseInt(page, 10) : 1,
+      page: parsedPage,
     });
   }
 
